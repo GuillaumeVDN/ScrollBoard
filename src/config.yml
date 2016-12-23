@@ -1,0 +1,181 @@
+# ------------------------------------------------------------ #
+# Configuration file for ScrollBoard plugin !
+# ------------------------------------------------------------ #
+
+# Default scrollboard
+
+default-scrollboard: sample-default
+
+# Scrollboards update delay
+# Every X seconds, the plugin will update the scrollboard for every online player
+
+update-delay: 5
+
+# ------------------------------------------------------------ #
+# World scrollboards (will override default)
+# ------------------------------------------------------------ #
+
+worlds:
+  info-world: sample-general-info
+  static-world: sample-static
+
+# ------------------------------------------------------------ #
+# Scrolled lines
+# Set a value to -1 if you want to instantly go up/down
+# ------------------------------------------------------------ #
+
+scrolled-lines:
+  scroll:
+    up: 2
+    down: 2
+  jump:
+    up: 5
+    down: 2
+  click:
+    up: 2
+    down: 2
+
+# ------------------------------------------------------------ #
+# MySQL (for players' scrollboards)
+# ------------------------------------------------------------ #
+
+mysql:
+  enable: false
+  url: 'jdbc:mysql://database.my-database.com/database'
+  user: 'user'
+  pass: 'pass'
+
+# ------------------------------------------------------------ #
+# Scrollboards list
+# ------------------------------------------------------------ #
+# Scrollboards types :
+# - SCROLL : When you scroll up/down
+# - JUMP : When you jump/sneak
+# - CLICK : When you left/right click
+# ------------------------------------------------------------ #
+
+scrollboards:
+
+# Default (sample)
+
+  sample-default:
+    type: SCROLL
+    title: '&a&lA sample scoreboard !'
+    separator:
+      - '&7                &o(scroll to go down)'
+      - '&r    &7---------------------------'
+      - '&r'
+    content:
+      - '&6This is a very simple scoreboard.'
+      - ' '
+      - '&6There are a lot of characters'
+      - '&6on one line, it goes up to 48 !'
+      - '  '
+      - '&d&ki&r You can use format codes : &d&ki'
+      - '   '
+      - '&aa'
+      - '&bb'
+      - '&cc'
+      - '&dd'
+      - '&ee'
+      - '&ff'
+      - '&11'
+      - '&22'
+      - '&33'
+      - '&44'
+      - '&55'
+      - '&66'
+      - '&77'
+      - '&88'
+      - '&99'
+      - '&00'
+      - '&oo'
+      - '&mm'
+      - '&ll'
+      - '&nn'
+      - '&kk'
+      - '    '
+      - '&d&lAwesome, isn''t it ?'
+
+# General info (sample)
+
+  sample-general-info:
+    type: SCROLL
+    title: '&l&aGeneral informations'
+    separator:
+      - '&7              &o(scroll to go down)'
+      - '&r   &7---------------------------'
+      - '&r'
+    content:
+      - '&fHello, &a{player_name} &f!'
+      - '&fYou''re playing on &a{server_name} &f!'
+      - ' '
+      - '&fYour ping : &a{player_ping}'
+      - '&fYour IP : &a{player_ip}'
+      - '  '
+      - '&fRAM : &a{server_ram_used} &f/ &a{server_ram_max}'
+      - '&fTPS : &a{server_tps}'
+      - '   '
+      - '&fHealth : &a{player_health} &f(+ &a{player_absorption_hearts}&f) / &a{player_max_health}'
+      - '&fFood : &a{player_food_level} &f/ &a20'
+      - '&fAir : &a{player_remaining_air} &f/ &a{player_max_air}'
+      - '     '
+      - '&fGameMode : &a{player_gamemode}'
+      - '&fLevel : &a{player_level}'
+      - '&fXP : &a{player_xp} &f/ &a{player_xp_to_level_up}'
+      - '      '
+      - '&fLast damage : &a{player_last_damage}'
+      - '&f(cause &a{player_last_damage_cause}&f)'
+      - '       '
+      - '&fActive potion effects : &a{player_potion_effects_count}'
+      - '&fItems in inventory : &a{player_inventory_items_count}'
+      - '&fItems in ender chest : &a{player_ender_chest_items_count}'
+      - '        '
+      - '&a&n&lMobs killed'
+      - '         '
+      - '&fZombies : &a{player_statistic:KILL_ENTITY,ZOMBIE}'
+      - '&fSkeletons : &a{player_statistic:KILL_ENTITY,SKELETON}'
+      - '&fCreepers : &a{player_statistic:KILL_ENTITY,CREEPER}'
+      - '&fSpiders : &a{player_statistic:KILL_ENTITY,SPIDER}'
+      - '&fCave spiders : &a{player_statistic:KILL_ENTITY,CAVE_SPIDER}'
+      - '&fBlazes : &a{player_statistic:KILL_ENTITY,BLAZE}'
+      - '          '
+      - '&a&n&lOres mined'
+      - '           '
+      - '&fStone : &a{player_statistic:MINE_BLOCK,STONE}'
+      - '&fDiamond : &a{player_statistic:MINE_BLOCK,DIAMOND_ORE}'
+      - '&fGold : &a{player_statistic:MINE_BLOCK,GOLD_ORE}'
+      - '&fIron : &a{player_statistic:MINE_BLOCK,IRON_ORE}'
+      - '&fCoal : &a{player_statistic:MINE_BLOCK,COAL_ORE}'
+      - '&fEmerald : &a{player_statistic:MINE_BLOCK,EMERALD_ORE}'
+      - '&fQuartz : &a{player_statistic:MINE_BLOCK,QUARTZ_ORE}'
+
+# Static (sample)
+
+  sample-static:
+    title: '&a&lStatic scoreboard'
+    content:
+      - '&r'
+      - '&aAlso work with static/classic'
+      - '&ascoreboards ! :D'
+
+# ------------------------------------------------------------ #
+# Messages
+# Note : only languages "ENG" and "FRA" are registered by
+#  default with PyrCore. If there are anothers languages,
+#  you'll have to register them with PyrCore in this file :
+#  [server directory]/plugins/pyrrh4_plugins/config.yml
+# ------------------------------------------------------------ #
+
+msg:
+  error-permission:
+    CZE: '&4ScrollBoard >> &cNa toto nemas opravneni !'
+    TUR: '&4ScrollBoard >> &c&cBunu yapmak için gerekli izine sahip değilsin !'
+    RUS: '&4ScrollBoard >> &cУ вас недостаточно прав для этого !'
+    POL: '&4ScrollBoard >> &cNie masz uprawnień do tego.'
+    ITA: '&4ScrollBoard >> &cNon hai il permesso di farlo !'
+    DUT: '&4ScrollBoard >> &cU hebt geen toestemming om dat te doen !'
+    FRA: '&4ScrollBoard >> &cVous n''avez pas la permission de faire cela !'
+    SPA: '&4ScrollBoard >> &c¡ No tienes permiso para ejecutar esto !'
+    ENG: '&4ScrollBoard >> &cYou don''t have the permission to do that !'
+    DEU: '&4ScrollBoard >> &cSie haben keine berechtigung das zu tun !'

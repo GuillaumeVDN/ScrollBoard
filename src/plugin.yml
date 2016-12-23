@@ -1,0 +1,15 @@
+﻿name: ScrollBoard
+description: Scroll your scoreboard !
+author: PYRRH4
+website: https://www.spigotmc.org/resources/24184/
+main: be.pyrrh4.scrollboard.ScrollBoard
+depend: [PyrCore]
+softdepend: [PlaceholderAPI]
+version: 1.4.0
+commands:
+  scrollboard:
+    aliases: [scroll]
+    description: ScrollBoard's main command
+permissions:
+  scrollboard.admin:
+    default: op
