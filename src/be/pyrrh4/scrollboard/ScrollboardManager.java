@@ -10,9 +10,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import be.pyrrh4.scrollboard.utils.PyrScoreboard;
 import be.pyrrh4.scrollboard.utils.ScrollType;
 import be.pyrrh4.scrollboard.utils.ScrollboardData;
-import be.pyrrh4.scrollboard.utils.PyrScoreboard;
 
 public class ScrollboardManager
 {
@@ -27,7 +27,7 @@ public class ScrollboardManager
 
 	public void updateAllPaths() throws	SQLException
 	{
-		//Bukkit.getLogger().info("Starting update...");
+		//ScrollBoard.i.log(Level.INFO, "Starting update...");
 
 		// ----------------------------------------------------------------------------------------------------
 		// SQL
@@ -99,33 +99,33 @@ public class ScrollboardManager
 
 		else
 		{
-			//Bukkit.getLogger().info("... non-SQL");
+			//ScrollBoard.i.log(Level.INFO, "... non-SQL");
 
 			// Players
 
 			for (Player pl : Bukkit.getOnlinePlayers())
 			{
-				//Bukkit.getLogger().info("... player " + pl.getName());
+				//ScrollBoard.i.log(Level.INFO, "... player " + pl.getName());
 				String path = ScrollBoard.i.database.getOrDefault(pl.getUniqueId().toString(), getDefaultPath(pl.getWorld()));
-				//Bukkit.getLogger().info("... Path 1 : " + path);
+				//ScrollBoard.i.log(Level.INFO, "... Path 1 : " + path);
 
 				if (path == null || path.isEmpty())
 					path = getDefaultPath(pl.getWorld());
 
-				//Bukkit.getLogger().info("... Path 2 : " + path);
+				//ScrollBoard.i.log(Level.INFO, "... Path 2 : " + path);
 
 				// Apply path
 
 				try
 				{
-					//Bukkit.getLogger().info("... trying to check if it is already the same path");
+					//ScrollBoard.i.log(Level.INFO, "... trying to check if it is already the same path");
 					if (playersData.get(pl).path.equals(path))
 						continue;
-					//Bukkit.getLogger().info("... no, and no exception were trow");
+					//ScrollBoard.i.log(Level.INFO, "... no, and no exception were trow");
 				}
 				catch (Exception exception)
 				{
-					//Bukkit.getLogger().info("... an exception were trow");
+					//ScrollBoard.i.log(Level.INFO, "... an exception were trow");
 					playersData.remove(pl);
 
 					if (path.equals("{default}"))
@@ -134,7 +134,7 @@ public class ScrollboardManager
 						continue;
 
 					playersData.put(pl, baseScrollboards.get(path).clone());
-					//Bukkit.getLogger().info("... removed and putted it to " + path);
+					//ScrollBoard.i.log(Level.INFO, "... removed and putted it to " + path);
 				}
 			}
 		}
@@ -249,9 +249,9 @@ public class ScrollboardManager
 	public void updateAllPaths() throws SQLException
 	{
 		Map<Player, String> playersPath = new HashMap<Player, String>();
-		YamlConfiguration currentConfig = Main.cfg;
+		Config currentConfig = Main.cfg;
 
-		Bukkit.getLogger().warning("1");
+		ScrollBoard.i.log(Level.WARNING, "1");
 		// SQL
 
 		if (Main.mySQL != null)
@@ -280,7 +280,7 @@ public class ScrollboardManager
 
 		for (Player player : Bukkit.getOnlinePlayers())
 		{
-			Bukkit.getLogger().warning("Player " + player.getName());
+			ScrollBoard.i.log(Level.WARNING, "Player " + player.getName());
 			UUID uuid = player.getUniqueId();
 			String scrollboardPath = "";
 
@@ -292,7 +292,7 @@ public class ScrollboardManager
 			else if (Main.database.get().contains(uuid))
 				scrollboardPath = Main.database.get().getString(uuid);
 
-			Bukkit.getLogger().warning("currentPath 1 : " + scrollboardPath);
+			ScrollBoard.i.log(Level.WARNING, "currentPath 1 : " + scrollboardPath);
 			// Autre
 
 			if (scrollboardPath.isEmpty())
@@ -309,7 +309,7 @@ public class ScrollboardManager
 				else
 					scrollboardPath = Main.i.defaultScrollboard;
 
-				Bukkit.getLogger().warning("currentPath 2 : " + scrollboardPath);
+				ScrollBoard.i.log(Level.WARNING, "currentPath 2 : " + scrollboardPath);
 			}
 
 			// On vérifie si ce n'est pas le scrollboard actuel
@@ -326,36 +326,36 @@ public class ScrollboardManager
 				playersData.remove(player);
 			}
 
-			Bukkit.getLogger().warning("currentPath 3 : " + scrollboardPath);
+			ScrollBoard.i.log(Level.WARNING, "currentPath 3 : " + scrollboardPath);
 			// On vérifie si ce n'est pas un scoreboard {default} ou {none}
 
 			if (scrollboardPath == null)
 			{
-				Bukkit.getLogger().warning("if 1");
-				Bukkit.getLogger().warning("if 1 : '" + Main.i.defaultScrollboard + "'");
+				ScrollBoard.i.log(Level.WARNING, "if 1");
+				ScrollBoard.i.log(Level.WARNING, "if 1 : '" + Main.i.defaultScrollboard + "'");
 				scrollboardPath = Main.i.defaultScrollboard;
 			}
 
 			else if (scrollboardPath.equalsIgnoreCase("{none}"))
 			{
-				Bukkit.getLogger().warning("if 2");
+				ScrollBoard.i.log(Level.WARNING, "if 2");
 				continue;
 			}
 
 			else if (scrollboardPath.equalsIgnoreCase("{default}"))
 			{
-				Bukkit.getLogger().warning("if 3");
+				ScrollBoard.i.log(Level.WARNING, "if 3");
 				scrollboardPath = Main.i.defaultScrollboard;
 			}
 
-			Bukkit.getLogger().warning("currentPath 4 : " + scrollboardPath);
+			ScrollBoard.i.log(Level.WARNING, "currentPath 4 : " + scrollboardPath);
 			// On crée le scrollboard
 
 			ScrollboardData scrollboardData = defaultScrollboards.get(scrollboardPath);
 			ScrollboardData data = new ScrollboardData(scrollboardData);
 
 			playersData.put(player, data);
-			Bukkit.getLogger().warning("currentPath 5 : " + scrollboardPath);
+			ScrollBoard.i.log(Level.WARNING, "currentPath 5 : " + scrollboardPath);
 		}
 	}
 

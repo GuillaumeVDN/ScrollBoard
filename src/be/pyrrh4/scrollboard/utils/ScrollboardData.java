@@ -4,14 +4,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import me.clip.placeholderapi.PlaceholderAPI;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import be.pyrrh4.core.lib.messenger.internal.Placeholders;
+import be.pyrrh4.core.messenger.Placeholders;
 import be.pyrrh4.core.util.UString;
+import be.pyrrh4.scrollboard.ScrollBoard;
+import me.clip.placeholderapi.PlaceholderAPI;
 
 public class ScrollboardData implements Cloneable
 {
@@ -93,14 +94,14 @@ public class ScrollboardData implements Cloneable
 			{
 				if (!text.contains("{") && !text.contains("}"))
 				{
-					Bukkit.getLogger().warning("------------------------------------------------------------");
-					Bukkit.getLogger().warning("");
-					Bukkit.getLogger().warning("[ScrollBoard] Trying to put a text that go over 48 characters");
-					Bukkit.getLogger().warning("in length. The text were cutted to 47 characters.");
-					Bukkit.getLogger().warning("(in '" + path + "', line " + index +")");
-					Bukkit.getLogger().warning("New text : " + text.substring(0, 47));
-					Bukkit.getLogger().warning("");
-					Bukkit.getLogger().warning("------------------------------------------------------------");
+					ScrollBoard.i.log(Level.WARNING, "------------------------------------------------------------");
+					ScrollBoard.i.log(Level.WARNING, "");
+					ScrollBoard.i.log(Level.WARNING, "[ScrollBoard] Trying to put a text that go over 48 characters");
+					ScrollBoard.i.log(Level.WARNING, "in length. The text were cutted to 47 characters.");
+					ScrollBoard.i.log(Level.WARNING, "(in '" + path + "', line " + index +")");
+					ScrollBoard.i.log(Level.WARNING, "New text : " + text.substring(0, 47));
+					ScrollBoard.i.log(Level.WARNING, "");
+					ScrollBoard.i.log(Level.WARNING, "------------------------------------------------------------");
 				}
 
 				scoreboard.add(text.substring(0, 47), index);

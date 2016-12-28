@@ -3,21 +3,23 @@ package be.pyrrh4.scrollboard;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import be.pyrrh4.core.AbstractPlugin;
 import be.pyrrh4.core.Core;
-import be.pyrrh4.core.PyrPlugin;
-import be.pyrrh4.core.lib.command.CommandArgumentsPattern;
-import be.pyrrh4.core.lib.command.CommandCallInfo;
-import be.pyrrh4.core.lib.command.CommandHandler;
-import be.pyrrh4.core.lib.command.CommandSubHandler;
-import be.pyrrh4.core.lib.storage.ConfigFile;
+import be.pyrrh4.core.Setting;
+import be.pyrrh4.core.command.CommandArgumentsPattern;
+import be.pyrrh4.core.command.CommandCallInfo;
+import be.pyrrh4.core.command.CommandHandler;
+import be.pyrrh4.core.command.CommandSubHandler;
+import be.pyrrh4.core.storage.Config;
+import be.pyrrh4.core.storage.ConfigFile;
 import be.pyrrh4.scrollboard.events.PlayerChangedWorld;
 import be.pyrrh4.scrollboard.events.PlayerInteract;
 import be.pyrrh4.scrollboard.events.PlayerItemHeld;
@@ -27,19 +29,28 @@ import be.pyrrh4.scrollboard.events.PlayerToggleSneak;
 import be.pyrrh4.scrollboard.utils.ScrollType;
 import be.pyrrh4.scrollboard.utils.ScrollboardData;
 
-public class ScrollBoard extends PyrPlugin
+public class ScrollBoard extends AbstractPlugin
 {
 	public static ScrollBoard i;
-	public static YamlConfiguration cfg;
+	public static Config cfg;
 	public ScrollboardManager scrollboardManager;
 	public String defaultScrollboard;
 	private CommandHandler handler;
 	public ConfigFile database = null;
 
-	public ScrollBoard()
+	// Initialize
+
+	@Override
+	public void initialize()
 	{
-		super(true, "config.yml", "msg", null, null, "https://www.spigotmc.org/resources/24697/", true);
+		setSetting(Setting.AUTO_UPDATE_URL, "https://www.spigotmc.org/resources/24697/");
+		setSetting(Setting.ALLOW_PUBLIC_MYSQL, true);
+		setSetting(Setting.HAS_STORAGE, true);
+		setSetting(Setting.CONFIG_FILE_NAME, "config.yml");
+		setSetting(Setting.CONFIG_PATH_MESSAGES, "msg");
 	}
+
+	// On enable
 
 	@Override
 	public void enable()
@@ -63,8 +74,8 @@ public class ScrollBoard extends PyrPlugin
 		{
 			if (oldFile.exists() && !database.getOrDefault("converted", false))
 			{
-				Bukkit.getLogger().info("[ScrollBoard] Starting converting old data from /ScrollBoard/database.yml to /pyrrh4_plugins/ScrollBoard/scrollboards.data ...");
-				YamlConfiguration old = YamlConfiguration.loadConfiguration(oldFile);
+				ScrollBoard.i.log(Level.INFO, "Starting converting old data from /ScrollBoard/database.yml to /pyrrh4_plugins/ScrollBoard/scrollboards.data ...");
+				Config old = Config.loadConfiguration(this, oldFile);
 				int loaded = 0;
 				int skipped = 0;
 
@@ -78,24 +89,24 @@ public class ScrollBoard extends PyrPlugin
 
 							if (scrollboard == null)
 							{
-								Bukkit.getLogger().warning("[ScrollBoard] Could not load " + Bukkit.getOfflinePlayer(UUID.fromString(uuid)) + "'s scrollboard from the old database file.");
+								ScrollBoard.i.log(Level.WARNING, "Could not load " + Bukkit.getOfflinePlayer(UUID.fromString(uuid)) + "'s scrollboard from the old database file.");
 								continue;
 							}
 
 							database.set(uuid, scrollboard);
 							loaded++;
-							Bukkit.getLogger().info("[ScrollBoard] Successfully loaded " + Bukkit.getOfflinePlayer(UUID.fromString(uuid)) + "'s from the old database file.");
+							ScrollBoard.i.log(Level.INFO, "Successfully loaded " + Bukkit.getOfflinePlayer(UUID.fromString(uuid)) + "'s from the old database file.");
 						}
 						catch (Exception exception)
 						{
 							skipped++;
-							Bukkit.getLogger().warning("[ScrollBoard] Could not load " + Bukkit.getOfflinePlayer(UUID.fromString(uuid)) + "'s scrollboard from the old database file.");
+							ScrollBoard.i.log(Level.WARNING, "Could not load " + Bukkit.getOfflinePlayer(UUID.fromString(uuid)) + "'s scrollboard from the old database file.");
 						}
 					}
 				}
 
 				database.set("converted", true);
-				Bukkit.getLogger().info("[ScrollBoard] Successfully converted all players scrollboards from the old database file. " + loaded + " player" + (loaded > 1 ? "s" : "") + " were loaded and " + skipped + " player" + (skipped > 1 ? "s" : "") + " were skipped.");
+				ScrollBoard.i.log(Level.INFO, "Successfully converted all players scrollboards from the old database file. " + loaded + " player" + (loaded > 1 ? "s" : "") + " were loaded and " + skipped + " player" + (skipped > 1 ? "s" : "") + " were skipped.");
 			}
 		}
 

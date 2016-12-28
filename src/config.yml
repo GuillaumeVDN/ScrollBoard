@@ -161,21 +161,18 @@ scrollboards:
 
 # ------------------------------------------------------------ #
 # Messages
-# Note : only languages "ENG" and "FRA" are registered by
-#  default with PyrCore. If there are anothers languages,
-#  you'll have to register them with PyrCore in this file :
-#  [server directory]/plugins/pyrrh4_plugins/config.yml
+# Default language is english ; alternative languages are
+#  commented below.
 # ------------------------------------------------------------ #
 
 msg:
-  error-permission:
-    CZE: '&4ScrollBoard >> &cNa toto nemas opravneni !'
-    TUR: '&4ScrollBoard >> &c&cBunu yapmak için gerekli izine sahip değilsin !'
-    RUS: '&4ScrollBoard >> &cУ вас недостаточно прав для этого !'
-    POL: '&4ScrollBoard >> &cNie masz uprawnień do tego.'
-    ITA: '&4ScrollBoard >> &cNon hai il permesso di farlo !'
-    DUT: '&4ScrollBoard >> &cU hebt geen toestemming om dat te doen !'
-    FRA: '&4ScrollBoard >> &cVous n''avez pas la permission de faire cela !'
-    SPA: '&4ScrollBoard >> &c¡ No tienes permiso para ejecutar esto !'
-    ENG: '&4ScrollBoard >> &cYou don''t have the permission to do that !'
-    DEU: '&4ScrollBoard >> &cSie haben keine berechtigung das zu tun !'
+  error-permission: '&4ScrollBoard >> &cYou don''t have the permission to do that !'
+#	CZE: '&4ScrollBoard >> &cNa toto nemas opravneni !'
+#	TUR: '&4ScrollBoard >> &c&cBunu yapmak için gerekli izine sahip değilsin !'
+#	RUS: '&4ScrollBoard >> &cУ вас недостаточно прав для этого !'
+#	POL: '&4ScrollBoard >> &cNie masz uprawnień do tego.'
+#	ITA: '&4ScrollBoard >> &cNon hai il permesso di farlo !'
+#	DUT: '&4ScrollBoard >> &cU hebt geen toestemming om dat te doen !'
+#	FRA: '&4ScrollBoard >> &cVous n''avez pas la permission de faire cela !'
+#	SPA: '&4ScrollBoard >> &c¡ No tienes permiso para ejecutar esto !'
+#	DEU: '&4ScrollBoard >> &cSie haben keine berechtigung das zu tun !'
