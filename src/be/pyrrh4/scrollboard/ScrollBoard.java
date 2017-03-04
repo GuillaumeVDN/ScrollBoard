@@ -8,6 +8,8 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -18,8 +20,9 @@ import be.pyrrh4.core.command.CommandArgumentsPattern;
 import be.pyrrh4.core.command.CommandCallInfo;
 import be.pyrrh4.core.command.CommandHandler;
 import be.pyrrh4.core.command.CommandSubHandler;
-import be.pyrrh4.core.storage.Config;
-import be.pyrrh4.core.storage.ConfigFile;
+import be.pyrrh4.core.storage.PMLConvertor;
+import be.pyrrh4.core.storage.PMLReader;
+import be.pyrrh4.core.storage.PMLWriter;
 import be.pyrrh4.scrollboard.events.PlayerChangedWorld;
 import be.pyrrh4.scrollboard.events.PlayerInteract;
 import be.pyrrh4.scrollboard.events.PlayerItemHeld;
@@ -32,11 +35,11 @@ import be.pyrrh4.scrollboard.utils.ScrollboardData;
 public class ScrollBoard extends AbstractPlugin
 {
 	public static ScrollBoard i;
-	public static Config cfg;
+	public static PMLReader cfg;
 	public ScrollboardManager scrollboardManager;
 	public String defaultScrollboard;
 	private CommandHandler handler;
-	public ConfigFile database = null;
+	public PMLWriter database = null;
 
 	// Initialize
 
@@ -46,8 +49,7 @@ public class ScrollBoard extends AbstractPlugin
 		setSetting(Setting.AUTO_UPDATE_URL, "https://www.spigotmc.org/resources/24697/");
 		setSetting(Setting.ALLOW_PUBLIC_MYSQL, true);
 		setSetting(Setting.HAS_STORAGE, true);
-		setSetting(Setting.CONFIG_FILE_NAME, "config.yml");
-		setSetting(Setting.CONFIG_PATH_MESSAGES, "msg");
+		setSetting(Setting.CONFIG_FILE_NAME, "config.pyrml");
 	}
 
 	// On enable
@@ -56,14 +58,66 @@ public class ScrollBoard extends AbstractPlugin
 	public void enable()
 	{
 		i = this;
-		cfg = config.getLast();
+		config.loadTextPaths(this, "msg", null, null);
+
+		// Converting data
+
+		File f = new File(getStorage().getParentDirectory(), "config.yml");
+
+		if (f.exists())
+		{
+			PMLConvertor convertor = new PMLConvertor(this, f);
+			convertor.addPath("default-scrollboard");
+			convertor.addPath("update-delay");
+
+			YamlConfiguration cfg = YamlConfiguration.loadConfiguration(f);
+			ConfigurationSection sec = cfg.getConfigurationSection("worlds");
+
+			if (sec != null)
+			{
+				for (String key : sec.getKeys(false)) {
+					convertor.addPath("worlds." + key);
+				}
+			}
+
+			convertor.addPath("scrolled-lines.scroll.up");
+			convertor.addPath("scrolles-lines.scroll.down");
+			convertor.addPath("scrolled-lines.jump.up");
+			convertor.addPath("scrolles-lines.jump.down");
+			convertor.addPath("scrolled-lines.click.up");
+			convertor.addPath("scrolles-lines.click.down");
+			convertor.addPath("mysql.enable");
+			convertor.addPath("mysql.url");
+			convertor.addPath("mysql.user");
+			convertor.addPath("mysql.pass");
+
+			sec = cfg.getConfigurationSection("worlds");
+
+			if (sec != null)
+			{
+				for (String key : sec.getKeys(false))
+				{
+					convertor.addPath("scrollboards." + key + ".type");
+					convertor.addPath("scrollboards." + key + ".title");
+					convertor.addPath("scrollboards." + key + ".separator");
+					convertor.addPath("scrollboards." + key + ".content");
+				}
+			}
+
+			convertor.addPath("msg.error-permission");
+			convertor.convert();
+		}
+
+		// Var
+
+		cfg = config;
 		this.scrollboardManager = new ScrollboardManager();
 		this.defaultScrollboard = cfg.getString("default-scrollboard");
 
 		// Database
 
 		if (getMySQL() == null) {
-			database = getStorage().getConfig("scrollboards.data");
+			database = getStorage().getPMLWriter("scrollboards.data");
 		}
 
 		// Converting old data
@@ -72,10 +126,10 @@ public class ScrollBoard extends AbstractPlugin
 
 		if (database != null)
 		{
-			if (oldFile.exists() && !database.getOrDefault("converted", false))
+			if (oldFile.exists() && !database.reader().getOrDefault("converted", false))
 			{
 				ScrollBoard.i.log(Level.INFO, "Starting converting old data from /ScrollBoard/database.yml to /pyrrh4_plugins/ScrollBoard/scrollboards.data ...");
-				Config old = Config.loadConfiguration(this, oldFile);
+				YamlConfiguration old = YamlConfiguration.loadConfiguration(oldFile);
 				int loaded = 0;
 				int skipped = 0;
 
@@ -105,7 +159,7 @@ public class ScrollBoard extends AbstractPlugin
 					}
 				}
 
-				database.set("converted", true);
+				database.set("converted", true).save();
 				ScrollBoard.i.log(Level.INFO, "Successfully converted all players scrollboards from the old database file. " + loaded + " player" + (loaded > 1 ? "s" : "") + " were loaded and " + skipped + " player" + (skipped > 1 ? "s" : "") + " were skipped.");
 			}
 		}
@@ -119,9 +173,12 @@ public class ScrollBoard extends AbstractPlugin
 		// Commands
 
 		getCommand("scrollboard").setExecutor(this);
-		handler = new CommandHandler("/scrollboard", Core.getMessenger());
 
-		handler.addSubCommand(new CommandSubHandler(true, false, "scrollboard.admin", new CommandArgumentsPattern("player [player] [string]"))
+		handler = new CommandHandler(this, "/scrollboard", Core.getMessenger());
+		handler.addHelp("/pyr reload ScrollBoard", "reload the plugin", "pyr.core.admin");
+		handler.addHelp("/scrollboard player [player] [scrollboard path]", "assign a scoreboard to a player", "scrollboard.admin");
+
+		handler.addSubCommand(new CommandSubHandler(false, false, "scrollboard.admin", new CommandArgumentsPattern("player [player] [string]"))
 		{
 			@Override
 			public void execute(CommandCallInfo call)
@@ -155,7 +212,7 @@ public class ScrollBoard extends AbstractPlugin
 				// Database file
 
 				else {
-					database.set(uuid, finalPath);
+					database.set(uuid, finalPath).save();
 				}
 
 				// Update
@@ -190,15 +247,15 @@ public class ScrollBoard extends AbstractPlugin
 
 		// Loading default scoreboard
 
-		for (String scrollboardPath : cfg.getConfigurationSection("scrollboards").getKeys(false))
+		for (String scrollboardPath : cfg.getKeysForSection("scrollboards", false))
 		{
 			scrollboardManager.baseScrollboards.put(scrollboardPath,
 					new ScrollboardData(
 							scrollboardPath,
-							ScrollType.fromString(cfg.getString("scrollboards." + scrollboardPath + ".type")),
+							ScrollType.fromString(cfg.getOrDefault("scrollboards." + scrollboardPath + ".type", (String) null)),
 							cfg.getString("scrollboards." + scrollboardPath + ".title"),
-							cfg.getStringList("scrollboards." + scrollboardPath + ".separator"),
-							cfg.getStringList("scrollboards." + scrollboardPath + ".content")));
+							cfg.getListOfString("scrollboards." + scrollboardPath + ".separator"),
+							cfg.getListOfString("scrollboards." + scrollboardPath + ".content")));
 		}
 
 		// Starting task
@@ -216,18 +273,10 @@ public class ScrollBoard extends AbstractPlugin
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
 	{
-		if (args.length == 0)
-		{
-			// TODO : /help : /scrollboard
-
-			Core.getMessenger().listMessage(sender, "ScrollBoard >>", "This server is running " + getDescription().getName() + " version " + getDescription().getVersion() + ".");
-
-			if (sender.hasPermission("pyr.core.admin")) {
-				Core.getMessenger().listSubMessage(sender, "  >>", "§a/scrollboard player [player] [scrollboard-path] §7: assign a scoreboard to a player");
-			}
+		if (args.length == 0) {
+			handler.showHelp(sender);
 		}
-		else
-		{
+		else {
 			handler.execute(sender, args);
 		}
 
@@ -261,7 +310,7 @@ public class ScrollBoard extends AbstractPlugin
 	}
 
 	@Override
-	public String getAdditionnalPasteContent()
+	public String getAdditionalPasteContent()
 	{
 		return "";
 	}

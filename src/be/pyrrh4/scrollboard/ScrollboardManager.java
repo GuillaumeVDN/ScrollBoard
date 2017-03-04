@@ -106,7 +106,7 @@ public class ScrollboardManager
 			for (Player pl : Bukkit.getOnlinePlayers())
 			{
 				//ScrollBoard.i.log(Level.INFO, "... player " + pl.getName());
-				String path = ScrollBoard.i.database.getOrDefault(pl.getUniqueId().toString(), getDefaultPath(pl.getWorld()));
+				String path = ScrollBoard.i.database.reader().getOrDefault(pl.getUniqueId().toString(), getDefaultPath(pl.getWorld()));
 				//ScrollBoard.i.log(Level.INFO, "... Path 1 : " + path);
 
 				if (path == null || path.isEmpty())
@@ -249,7 +249,7 @@ public class ScrollboardManager
 	public void updateAllPaths() throws SQLException
 	{
 		Map<Player, String> playersPath = new HashMap<Player, String>();
-		Config currentConfig = Main.cfg;
+		YamlConfiguration currentYamlConfiguration = Main.cfg;
 
 		ScrollBoard.i.log(Level.WARNING, "1");
 		// SQL
@@ -301,8 +301,8 @@ public class ScrollboardManager
 
 				String worldName = player.getWorld().getName();
 
-				if (currentConfig.contains("worlds." + worldName))
-					scrollboardPath = currentConfig.getString("worlds." + worldName);
+				if (currentYamlConfiguration.contains("worlds." + worldName))
+					scrollboardPath = currentYamlConfiguration.getString("worlds." + worldName);
 
 				// Par défaut
 
@@ -380,13 +380,13 @@ public class ScrollboardManager
 
 			String worldName = player.getWorld().getName();
 
-			if (currentConfig.contains("worlds." + worldName))
-				scrollboardPath = currentConfig.getString("worlds." + worldName);
+			if (currentYamlConfiguration.contains("worlds." + worldName))
+				scrollboardPath = currentYamlConfiguration.getString("worlds." + worldName);
 
 			// Par défaut
 
 			else
-				scrollboardPath = currentConfig.getString("default-scrollboard");
+				scrollboardPath = currentYamlConfiguration.getString("default-scrollboard");
 		}
 
 		// On vérifie si ce n'est pas le scrollboard actuel
@@ -409,7 +409,7 @@ public class ScrollboardManager
 			return;
 
 		else if (scrollboardPath.equalsIgnoreCase("{default}"))
-			scrollboardPath = currentConfig.getString("default-scrollboard");
+			scrollboardPath = currentYamlConfiguration.getString("default-scrollboard");
 
 		// On crée le scrollboard
 

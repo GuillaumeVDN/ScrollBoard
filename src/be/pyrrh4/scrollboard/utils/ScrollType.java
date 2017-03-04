@@ -9,8 +9,9 @@ public enum ScrollType
 
 	public static ScrollType fromString(String name)
 	{
-		if (name == null)
+		if (name == null) {
 			return DEFAULT;
+		}
 
 		for (ScrollType type : values())
 		{
