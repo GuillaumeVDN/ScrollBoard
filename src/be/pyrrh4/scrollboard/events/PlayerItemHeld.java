@@ -15,7 +15,7 @@ public class PlayerItemHeld implements Listener
 	public void onExecute(final PlayerItemHeldEvent event)
 	{
 		final Player player = event.getPlayer();
-		final ScrollboardData data = ScrollBoard.i.scrollboardManager.playersData.get(player);
+		final ScrollboardData data = ScrollBoard.instance().getScrollboardManager().playersData.get(player);
 
 		if (data == null) return;
 		else if (data.type == null) return;
@@ -24,14 +24,13 @@ public class PlayerItemHeld implements Listener
 		int oldSlot = event.getPreviousSlot();
 		int newSlot = event.getNewSlot();
 
-		// Monter
-
-		if (newSlot == oldSlot - 1 || oldSlot == 0 && newSlot == 8)
-			ScrollBoard.i.scrollboardManager.goUp(player, data, ScrollType.SCROLL);
-
-		// Descendre
-
-		else if (newSlot == oldSlot + 1 || oldSlot == 8 && newSlot == 0)
-			ScrollBoard.i.scrollboardManager.goDown(player, data, ScrollType.SCROLL);
+		// up
+		if (newSlot == oldSlot - 1 || oldSlot == 0 && newSlot == 8) {
+			ScrollBoard.instance().getScrollboardManager().goUp(player, data, ScrollType.SCROLL);
+		}
+		// down
+		else if (newSlot == oldSlot + 1 || oldSlot == 8 && newSlot == 0) {
+			ScrollBoard.instance().getScrollboardManager().goDown(player, data, ScrollType.SCROLL);
+		}
 	}
 }

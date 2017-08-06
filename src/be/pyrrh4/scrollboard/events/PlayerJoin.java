@@ -11,6 +11,6 @@ public class PlayerJoin implements Listener
 	@EventHandler
 	public void onExecute(PlayerJoinEvent event)
 	{
-		ScrollBoard.i.updateAll();
+		ScrollBoard.instance().getScrollboardManager().updateAll();
 	}
 }

@@ -1,28 +1,16 @@
 package be.pyrrh4.scrollboard;
 
-import java.io.File;
-import java.sql.SQLException;
-import java.util.UUID;
-import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import be.pyrrh4.core.AbstractPlugin;
 import be.pyrrh4.core.Core;
-import be.pyrrh4.core.Setting;
-import be.pyrrh4.core.command.CommandArgumentsPattern;
-import be.pyrrh4.core.command.CommandCallInfo;
-import be.pyrrh4.core.command.CommandHandler;
-import be.pyrrh4.core.command.CommandSubHandler;
-import be.pyrrh4.core.storage.PMLConvertor;
-import be.pyrrh4.core.storage.PMLReader;
-import be.pyrrh4.core.storage.PMLWriter;
+import be.pyrrh4.core.PyrPlugin;
+import be.pyrrh4.core.User;
+import be.pyrrh4.core.command.Argument;
+import be.pyrrh4.core.command.Command;
+import be.pyrrh4.core.util.Utils;
+import be.pyrrh4.scrollboard.commands.CommandPlayer;
 import be.pyrrh4.scrollboard.events.PlayerChangedWorld;
 import be.pyrrh4.scrollboard.events.PlayerInteract;
 import be.pyrrh4.scrollboard.events.PlayerItemHeld;
@@ -32,208 +20,83 @@ import be.pyrrh4.scrollboard.events.PlayerToggleSneak;
 import be.pyrrh4.scrollboard.utils.ScrollType;
 import be.pyrrh4.scrollboard.utils.ScrollboardData;
 
-public class ScrollBoard extends AbstractPlugin
+public class ScrollBoard extends PyrPlugin
 {
-	public static ScrollBoard i;
-	public static PMLReader cfg;
-	public ScrollboardManager scrollboardManager;
-	public String defaultScrollboard;
-	private CommandHandler handler;
-	public PMLWriter database = null;
+	// ------------------------------------------------------------
+	// Instance
+	// ------------------------------------------------------------
 
-	// Initialize
+	private static ScrollBoard instance;
 
-	@Override
-	public void initialize()
-	{
-		setSetting(Setting.AUTO_UPDATE_URL, "https://www.spigotmc.org/resources/24697/");
-		setSetting(Setting.ALLOW_PUBLIC_MYSQL, true);
-		setSetting(Setting.HAS_STORAGE, true);
-		setSetting(Setting.CONFIG_FILE_NAME, "config.pyrml");
+	public ScrollBoard() {
+		instance = this;
 	}
 
-	// On enable
+	public static ScrollBoard instance() {
+		return instance;
+	}
+
+	// ------------------------------------------------------------
+	// Fields
+	// ------------------------------------------------------------
+
+	private int checkTaskId;
+	private ScrollboardManager scrollboardManager;
+	private String defaultScrollboard;
+
+	public ScrollboardManager getScrollboardManager() {
+		return scrollboardManager;
+	}
+
+	public String getDefaultScrollboard() {
+		return defaultScrollboard;
+	}
+
+	// ------------------------------------------------------------
+	// Override
+	// ------------------------------------------------------------
 
 	@Override
-	public void enable()
+	protected void init()
 	{
-		i = this;
-		config.loadTextPaths(this, "msg", null, null);
+		getSettings().autoUpdateUrl("https://www.spigotmc.org/resources/24697/");
+	}
 
-		// Converting data
-
-		File f = new File(getStorage().getParentDirectory(), "config.yml");
-
-		if (f.exists())
-		{
-			PMLConvertor convertor = new PMLConvertor(this, f);
-			convertor.addPath("default-scrollboard");
-			convertor.addPath("update-delay");
-
-			YamlConfiguration cfg = YamlConfiguration.loadConfiguration(f);
-			ConfigurationSection sec = cfg.getConfigurationSection("worlds");
-
-			if (sec != null)
-			{
-				for (String key : sec.getKeys(false)) {
-					convertor.addPath("worlds." + key);
-				}
-			}
-
-			convertor.addPath("scrolled-lines.scroll.up");
-			convertor.addPath("scrolles-lines.scroll.down");
-			convertor.addPath("scrolled-lines.jump.up");
-			convertor.addPath("scrolles-lines.jump.down");
-			convertor.addPath("scrolled-lines.click.up");
-			convertor.addPath("scrolles-lines.click.down");
-			convertor.addPath("mysql.enable");
-			convertor.addPath("mysql.url");
-			convertor.addPath("mysql.user");
-			convertor.addPath("mysql.pass");
-
-			sec = cfg.getConfigurationSection("worlds");
-
-			if (sec != null)
-			{
-				for (String key : sec.getKeys(false))
-				{
-					convertor.addPath("scrollboards." + key + ".type");
-					convertor.addPath("scrollboards." + key + ".title");
-					convertor.addPath("scrollboards." + key + ".separator");
-					convertor.addPath("scrollboards." + key + ".content");
-				}
-			}
-
-			convertor.addPath("msg.error-permission");
-			convertor.convert();
+	@Override
+	public void initUserPluginData(User user) {
+		// Player data
+		if (!user.hasPluginData("scrollboard")) {
+			user.setPluginData("scrollboard", new PlayerData());
 		}
+	}
 
-		// Var
+	@Override
+	protected void initPluginData() {}
 
-		cfg = config;
+	@Override
+	protected void savePluginData() {}
+
+	// ------------------------------------------------------------
+	// On enable
+	// ------------------------------------------------------------
+
+	@Override
+	protected void enable()
+	{
+		// settings
 		this.scrollboardManager = new ScrollboardManager();
-		this.defaultScrollboard = cfg.getString("default-scrollboard");
+		this.defaultScrollboard = getConfiguration().getString("default-scrollboard");
 
-		// Database
-
-		if (getMySQL() == null) {
-			database = getStorage().getPMLWriter("scrollboards.data");
+		// mysql
+		if (Core.instance().getMySQL() != null && getConfiguration().getBoolean("mysql_enable")) {
+			Core.instance().getMySQL().executeQuery("CREATE TABLE IF NOT EXISTS scrollboard_players(id INT NOT NULL AUTO_INCREMENT, uuid VARCHAR(40) NOT NULL, path TINYTEXT, PRIMARY KEY(id))ENGINE=MYISAM DEFAULT CHARSET='utf8';");
 		}
 
-		// Converting old data
+		// commands
+		Command command = new Command(this, Utils.asList("scrollboard"), Utils.emptyList(), "scrollboard", false, false, null, "ScrollBoard main command", Utils.emptyList());
+		new CommandPlayer(command, Utils.asList("player"), Utils.asList(Argument.OFFLINE_PLAYER, Argument.STRING), false, false, "scrollboard.admin", "assign a scrollboard to a player", Utils.asList("[player] [scrollboard id]"));
 
-		File oldFile = new File(getDataFolder().getParentFile() + File.separator + "ScrollBoard", "database.yml");
-
-		if (database != null)
-		{
-			if (oldFile.exists() && !database.reader().getOrDefault("converted", false))
-			{
-				ScrollBoard.i.log(Level.INFO, "Starting converting old data from /ScrollBoard/database.yml to /pyrrh4_plugins/ScrollBoard/scrollboards.data ...");
-				YamlConfiguration old = YamlConfiguration.loadConfiguration(oldFile);
-				int loaded = 0;
-				int skipped = 0;
-
-				if (old.contains("players"))
-				{
-					for (String uuid : old.getConfigurationSection("items").getKeys(false))
-					{
-						try
-						{
-							String scrollboard = old.getString("items." + uuid);
-
-							if (scrollboard == null)
-							{
-								ScrollBoard.i.log(Level.WARNING, "Could not load " + Bukkit.getOfflinePlayer(UUID.fromString(uuid)) + "'s scrollboard from the old database file.");
-								continue;
-							}
-
-							database.set(uuid, scrollboard);
-							loaded++;
-							ScrollBoard.i.log(Level.INFO, "Successfully loaded " + Bukkit.getOfflinePlayer(UUID.fromString(uuid)) + "'s from the old database file.");
-						}
-						catch (Exception exception)
-						{
-							skipped++;
-							ScrollBoard.i.log(Level.WARNING, "Could not load " + Bukkit.getOfflinePlayer(UUID.fromString(uuid)) + "'s scrollboard from the old database file.");
-						}
-					}
-				}
-
-				database.set("converted", true).save();
-				ScrollBoard.i.log(Level.INFO, "Successfully converted all players scrollboards from the old database file. " + loaded + " player" + (loaded > 1 ? "s" : "") + " were loaded and " + skipped + " player" + (skipped > 1 ? "s" : "") + " were skipped.");
-			}
-		}
-
-		// MySQL
-
-		else {
-			getMySQL().executeQuery("CREATE TABLE IF NOT EXISTS scrollboard_players(uuid VARCHAR(40) NOT NULL, path TINYTEXT, PRIMARY KEY(id))ENGINE=MYISAM DEFAULT CHARSET='utf8';");
-		}
-
-		// Commands
-
-		getCommand("scrollboard").setExecutor(this);
-
-		handler = new CommandHandler(this, "/scrollboard", Core.getMessenger());
-		handler.addHelp("/pyr reload ScrollBoard", "reload the plugin", "pyr.core.admin");
-		handler.addHelp("/scrollboard player [player] [scrollboard path]", "assign a scoreboard to a player", "scrollboard.admin");
-
-		handler.addSubCommand(new CommandSubHandler(false, false, "scrollboard.admin", new CommandArgumentsPattern("player [player] [string]"))
-		{
-			@Override
-			public void execute(CommandCallInfo call)
-			{
-				Player player = call.getSenderAsPlayer();
-				Player target = call.getArgAsPlayer(1);
-				String path = call.getArgAsString(2);
-
-				if (!cfg.contains("scrollboards." + path) && !path.equalsIgnoreCase("{default}") && !path.equalsIgnoreCase("{none}"))
-				{
-					Core.getMessenger().error(player, "ScrollBoard >>", "Could not find scrollboard '" + path + "' !");
-					return;
-				}
-
-				String uuid = player.getUniqueId().toString();
-				String finalPath = path.equalsIgnoreCase("{default}") ? ScrollBoard.cfg.getString("default-scrollboard") : path;
-
-				// MySQL
-
-				if (getMySQL() != null)
-				{
-					long exists = (long) getMySQL().getObject("SELECT COUNT(*) AS exsts FROM scrollboard_players WHERE uuid='" + uuid + "';", "exsts");
-
-					if (exists == 0) {
-						getMySQL().executeQuery("INSERT INTO scrollboard_players VALUES('" + uuid + "', '" + finalPath + "');");
-					} else {
-						getMySQL().executeQuery("UPDATE scrollboard_players SET path='" + finalPath + "' WHERE uuid='" + uuid + "';");
-					}
-				}
-
-				// Database file
-
-				else {
-					database.set(uuid, finalPath).save();
-				}
-
-				// Update
-
-				if (player != null && player.isOnline())
-				{
-					if (finalPath.equalsIgnoreCase("{none}")) {
-						player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-					}
-
-					updateAll();
-				}
-
-				// Message
-
-				Core.getMessenger().normal(player, "ScrollBoard >>", "§a" + target.getName() + "'s scrollboard was set to '" + (path.equalsIgnoreCase("{default}") ? finalPath : path) + " !");
-			}
-		});
-
-		// Events
-
+		// events
 		Bukkit.getPluginManager().registerEvents(new PlayerItemHeld(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerToggleSneak(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerMove(), this);
@@ -241,77 +104,38 @@ public class ScrollBoard extends AbstractPlugin
 		Bukkit.getPluginManager().registerEvents(new PlayerJoin(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerChangedWorld(), this);
 
-		// Delays
-
-		Long updateDelay = Long.parseLong(cfg.getString("update-delay"));
-
-		// Loading default scoreboard
-
-		for (String scrollboardPath : cfg.getKeysForSection("scrollboards", false))
+		// load default scoreboard
+		for (String scrollboardPath : getConfiguration().getKeysForSection("scrollboards", false))
 		{
 			scrollboardManager.baseScrollboards.put(scrollboardPath,
 					new ScrollboardData(
 							scrollboardPath,
-							ScrollType.fromString(cfg.getOrDefault("scrollboards." + scrollboardPath + ".type", (String) null)),
-							cfg.getString("scrollboards." + scrollboardPath + ".title"),
-							cfg.getListOfString("scrollboards." + scrollboardPath + ".separator"),
-							cfg.getListOfString("scrollboards." + scrollboardPath + ".content")));
+							ScrollType.fromString(getConfiguration().getString("scrollboards." + scrollboardPath + ".type")),
+							getConfiguration().getString("scrollboards." + scrollboardPath + ".title"),
+							getConfiguration().getList("scrollboards." + scrollboardPath + ".separator"),
+							getConfiguration().getList("scrollboards." + scrollboardPath + ".content")));
 		}
 
-		// Starting task
-
-		checkTaskId = new BukkitRunnable()
-		{
+		// task
+		checkTaskId = new BukkitRunnable() {
 			@Override
-			public void run()
-			{
-				updateAll();
+			public void run() {
+				scrollboardManager.updateAll();
 			}
-		}.runTaskTimerAsynchronously(ScrollBoard.i, 20L, 20L * updateDelay).getTaskId();
+		}.runTaskTimerAsynchronously(ScrollBoard.instance(), 20L, 20L * getConfiguration().getLong("update-delay")).getTaskId();
 	}
+
+	// ------------------------------------------------------------
+	// On disable
+	// ------------------------------------------------------------
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
-	{
-		if (args.length == 0) {
-			handler.showHelp(sender);
-		}
-		else {
-			handler.execute(sender, args);
-		}
-
-		return true;
-	}
-
-	public void updateAll()
-	{
-		try
-		{
-			scrollboardManager.updateAllPaths();
-		}
-		catch (SQLException exception) { }
-
-		for (Player pl : Bukkit.getOnlinePlayers())
-		{
-			scrollboardManager.updatePlaceHolders(pl);
-			scrollboardManager.update(pl);
-		}
-	}
-
-	private int checkTaskId;
-
-	@Override
-	public void disable()
+	protected void disable()
 	{
 		Bukkit.getScheduler().cancelTask(checkTaskId);
 
-		for (Player pl : Bukkit.getOnlinePlayers())
+		for (Player pl : Bukkit.getOnlinePlayers()) {
 			pl.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-	}
-
-	@Override
-	public String getAdditionalPasteContent()
-	{
-		return "";
+		}
 	}
 }

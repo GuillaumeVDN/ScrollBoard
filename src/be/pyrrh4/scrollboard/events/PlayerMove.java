@@ -6,8 +6,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 import be.pyrrh4.scrollboard.ScrollBoard;
-import be.pyrrh4.scrollboard.utils.ScrollboardData;
 import be.pyrrh4.scrollboard.utils.ScrollType;
+import be.pyrrh4.scrollboard.utils.ScrollboardData;
 
 public class PlayerMove implements Listener
 {
@@ -17,15 +17,14 @@ public class PlayerMove implements Listener
 		if (event.getFrom().getY() + 0.419 < event.getTo().getY() || event.getFrom().getY() + 0.2 < event.getTo().getY())
 		{
 			Player player = event.getPlayer();
-			ScrollboardData data = ScrollBoard.i.scrollboardManager.playersData.get(player);
+			ScrollboardData data = ScrollBoard.instance().getScrollboardManager().playersData.get(player);
 
 			if (data == null) return;
 			else if (data.type == null) return;
 			else if (!data.type.equals(ScrollType.JUMP)) return;
 
-			// Monter
-
-			ScrollBoard.i.scrollboardManager.goUp(player, data, ScrollType.JUMP);
+			// up
+			ScrollBoard.instance().getScrollboardManager().goUp(player, data, ScrollType.JUMP);
 		}
 	}
 }

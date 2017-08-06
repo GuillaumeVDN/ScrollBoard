@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import be.pyrrh4.core.messenger.Placeholders;
-import be.pyrrh4.core.util.UString;
+import be.pyrrh4.core.Logger;
+import be.pyrrh4.core.Logger.Level;
+import be.pyrrh4.core.util.PlaceholderAPIHandler;
+import be.pyrrh4.core.util.Utils;
 import be.pyrrh4.scrollboard.ScrollBoard;
-import me.clip.placeholderapi.PlaceholderAPI;
 
 public class ScrollboardData implements Cloneable
 {
@@ -33,10 +33,10 @@ public class ScrollboardData implements Cloneable
 		this.path = path;
 		this.type = type;
 
-		this.title = UString.format(title);
+		this.title = Utils.format(title);
 		this.separatorSize = 0;
-		this.separator = UString.format(separator);
-		this.originalContent = UString.format(originalContent);
+		this.separator = Utils.format(separator);
+		this.originalContent = Utils.format(originalContent);
 		this.replacedContent = new ArrayList<String>(originalContent);
 
 		if (separator != null)
@@ -53,12 +53,15 @@ public class ScrollboardData implements Cloneable
 	public void replace(Player player)
 	{
 		replacedContent.clear();
-		replacedContent = Placeholders.fillPlaceholders(player, replacedContent);
+
+		if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null && Bukkit.getPluginManager().getPlugin("PlaceholderAPI").isEnabled()) {
+			PlaceholderAPIHandler.fill(player, replacedContent);
+		}
 
 		if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
 		{
 			for (String original : originalContent)
-				replacedContent.add(PlaceholderAPI.setPlaceholders(player, original));
+				replacedContent.add(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null && Bukkit.getPluginManager().getPlugin("PlaceholderAPI").isEnabled() ? PlaceholderAPIHandler.fill(player, original) : original);
 		}
 	}
 
@@ -92,16 +95,17 @@ public class ScrollboardData implements Cloneable
 
 			else
 			{
+				// not a big placeholder
 				if (!text.contains("{") && !text.contains("}"))
 				{
-					ScrollBoard.i.log(Level.WARNING, "------------------------------------------------------------");
-					ScrollBoard.i.log(Level.WARNING, "");
-					ScrollBoard.i.log(Level.WARNING, "[ScrollBoard] Trying to put a text that go over 48 characters");
-					ScrollBoard.i.log(Level.WARNING, "in length. The text were cutted to 47 characters.");
-					ScrollBoard.i.log(Level.WARNING, "(in '" + path + "', line " + index +")");
-					ScrollBoard.i.log(Level.WARNING, "New text : " + text.substring(0, 47));
-					ScrollBoard.i.log(Level.WARNING, "");
-					ScrollBoard.i.log(Level.WARNING, "------------------------------------------------------------");
+					Logger.log(Level.WARNING, ScrollBoard.instance(), "------------------------------------------------------------");
+					Logger.log(Level.WARNING, ScrollBoard.instance(), "");
+					Logger.log(Level.WARNING, ScrollBoard.instance(), "[ScrollBoard] Trying to put a text that go over 48 characters");
+					Logger.log(Level.WARNING, ScrollBoard.instance(), "in length. The text were cutted to 47 characters.");
+					Logger.log(Level.WARNING, ScrollBoard.instance(), "(in '" + path + "', line " + index +")");
+					Logger.log(Level.WARNING, ScrollBoard.instance(), "New text : " + text.substring(0, 47));
+					Logger.log(Level.WARNING, ScrollBoard.instance(), "");
+					Logger.log(Level.WARNING, ScrollBoard.instance(), "------------------------------------------------------------");
 				}
 
 				scoreboard.add(text.substring(0, 47), index);
