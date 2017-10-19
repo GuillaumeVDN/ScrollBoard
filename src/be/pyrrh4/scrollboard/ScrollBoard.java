@@ -7,10 +7,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import be.pyrrh4.core.Core;
 import be.pyrrh4.core.PyrPlugin;
 import be.pyrrh4.core.User;
-import be.pyrrh4.core.command.Argument;
+import be.pyrrh4.core.command.Arguments;
 import be.pyrrh4.core.command.Command;
-import be.pyrrh4.core.util.Utils;
-import be.pyrrh4.scrollboard.commands.CommandPlayer;
+import be.pyrrh4.scrollboard.commands.ArgPlayer;
 import be.pyrrh4.scrollboard.events.PlayerChangedWorld;
 import be.pyrrh4.scrollboard.events.PlayerInteract;
 import be.pyrrh4.scrollboard.events.PlayerItemHeld;
@@ -71,7 +70,7 @@ public class ScrollBoard extends PyrPlugin
 	}
 
 	@Override
-	protected void initPluginData() {}
+	protected void initStorage() {}
 
 	@Override
 	protected void savePluginData() {}
@@ -93,8 +92,7 @@ public class ScrollBoard extends PyrPlugin
 		}
 
 		// commands
-		Command command = new Command(this, Utils.asList("scrollboard"), Utils.emptyList(), "scrollboard", false, false, null, "ScrollBoard main command", Utils.emptyList());
-		new CommandPlayer(command, Utils.asList("player"), Utils.asList(Argument.OFFLINE_PLAYER, Argument.STRING), false, false, "scrollboard.admin", "assign a scrollboard to a player", Utils.asList("[player] [scrollboard id]"));
+		new Command(this, "scrollboard", "scrollboard", null).addArguments(new Arguments("player [player] [string]", "player [player] [scrollboard]", "assign a scrollboard", "scrollboard.admin", false, new ArgPlayer()));
 
 		// events
 		Bukkit.getPluginManager().registerEvents(new PlayerItemHeld(), this);
@@ -122,7 +120,7 @@ public class ScrollBoard extends PyrPlugin
 			public void run() {
 				scrollboardManager.updateAll();
 			}
-		}.runTaskTimerAsynchronously(ScrollBoard.instance(), 20L, 20L * getConfiguration().getLong("update-delay")).getTaskId();
+		}.runTaskTimerAsynchronously(ScrollBoard.instance(), 20L * 6L, (long) (20 * getConfiguration().getInt("update-delay"))).getTaskId();
 	}
 
 	// ------------------------------------------------------------

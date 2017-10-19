@@ -1,6 +1,5 @@
 package be.pyrrh4.scrollboard.commands;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -8,7 +7,7 @@ import org.bukkit.entity.Player;
 
 import be.pyrrh4.core.Core;
 import be.pyrrh4.core.User;
-import be.pyrrh4.core.command.Argument;
+import be.pyrrh4.core.command.Arguments.Performer;
 import be.pyrrh4.core.command.CallInfo;
 import be.pyrrh4.core.messenger.Messenger;
 import be.pyrrh4.core.messenger.Messenger.Level;
@@ -16,20 +15,8 @@ import be.pyrrh4.core.util.Handler;
 import be.pyrrh4.scrollboard.PlayerData;
 import be.pyrrh4.scrollboard.ScrollBoard;
 
-public class CommandPlayer extends Argument
+public class ArgPlayer implements Performer
 {
-	// ------------------------------------------------------------
-	// Constructor
-	// ------------------------------------------------------------
-
-	public CommandPlayer(Argument parent, ArrayList<String> aliases, ArrayList<String> params, boolean playerOnly, boolean async, String permission, String description, ArrayList<String> paramsDescription) {
-		super(parent, aliases, params, playerOnly, async, permission, description, paramsDescription);
-	}
-
-	// ------------------------------------------------------------
-	// Override
-	// ------------------------------------------------------------
-
 	@Override
 	public void perform(CallInfo call)
 	{

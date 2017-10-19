@@ -108,7 +108,12 @@ public class ScrollboardManager
 			for (Player pl : Bukkit.getOnlinePlayers())
 			{
 				//ScrollBoard.instance().log(Level.INFO, "... player " + pl.getName());
-				String path = ((PlayerData) User.from(pl).getPluginData("scrollboard")).getScrollboard();
+				String path = null;
+
+				if (User.from(pl) != null && User.from(pl).getPluginData("scrollboard") != null) {
+					PlayerData data = User.from(pl).getPluginData("scrollboard");
+					path = data.getScrollboard();
+				}
 
 				if (path == null || path.isEmpty() || !ScrollBoard.instance().getScrollboardManager().baseScrollboards.containsKey(path)) {
 					path = getDefaultPath(pl.getWorld());
