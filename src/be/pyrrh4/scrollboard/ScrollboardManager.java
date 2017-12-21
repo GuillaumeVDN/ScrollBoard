@@ -110,8 +110,8 @@ public class ScrollboardManager
 				//ScrollBoard.instance().log(Level.INFO, "... player " + pl.getName());
 				String path = null;
 
-				if (User.from(pl) != null && User.from(pl).getPluginData("scrollboard") != null) {
-					PlayerData data = User.from(pl).getPluginData("scrollboard");
+				if (User.from(pl) != null && User.from(pl).getPluginData(ScrollBoardUser.class) != null) {
+					ScrollBoardUser data = User.from(pl).getPluginData(ScrollBoardUser.class);
 					path = data.getScrollboard();
 				}
 

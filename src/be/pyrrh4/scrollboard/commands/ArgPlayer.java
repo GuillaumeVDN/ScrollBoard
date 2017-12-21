@@ -12,8 +12,8 @@ import be.pyrrh4.core.command.CallInfo;
 import be.pyrrh4.core.messenger.Messenger;
 import be.pyrrh4.core.messenger.Messenger.Level;
 import be.pyrrh4.core.util.Handler;
-import be.pyrrh4.scrollboard.PlayerData;
 import be.pyrrh4.scrollboard.ScrollBoard;
+import be.pyrrh4.scrollboard.ScrollBoardUser;
 
 public class ArgPlayer implements Performer
 {
@@ -34,7 +34,7 @@ public class ArgPlayer implements Performer
 		final String finalPath = path.equalsIgnoreCase("{default}") ? ScrollBoard.instance().getDefaultScrollboard() : path;
 
 		// plugin data
-		((PlayerData) User.from(UUID.fromString(uuid)).getPluginData("scrollboard")).setScrollboard(finalPath);
+		User.from(UUID.fromString(uuid)).getPluginData(ScrollBoardUser.class).setScrollboard(finalPath).save();
 
 		// mySQL
 		if (Core.instance().getMySQL() != null && ScrollBoard.instance().getConfiguration().getBoolean("mysql_enable")) {

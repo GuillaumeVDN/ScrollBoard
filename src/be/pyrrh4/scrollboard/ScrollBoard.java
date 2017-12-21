@@ -6,7 +6,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import be.pyrrh4.core.Core;
 import be.pyrrh4.core.PyrPlugin;
-import be.pyrrh4.core.User;
 import be.pyrrh4.core.command.Arguments;
 import be.pyrrh4.core.command.Command;
 import be.pyrrh4.scrollboard.commands.ArgPlayer;
@@ -56,17 +55,8 @@ public class ScrollBoard extends PyrPlugin
 	// ------------------------------------------------------------
 
 	@Override
-	protected void init()
-	{
-		getSettings().autoUpdateUrl("https://www.spigotmc.org/resources/24697/");
-	}
-
-	@Override
-	public void initUserPluginData(User user) {
-		// Player data
-		if (!user.hasPluginData("scrollboard")) {
-			user.setPluginData("scrollboard", new PlayerData());
-		}
+	protected void init() {
+		//getSettings().autoUpdateUrl("https://www.spigotmc.org/resources/24697/");
 	}
 
 	@Override
