@@ -66,6 +66,27 @@ public class ScrollBoard extends PyrPlugin
 	protected void savePluginData() {}
 
 	// ------------------------------------------------------------
+	// Override : reload
+	// ------------------------------------------------------------
+
+	@Override
+	protected void innerReload() {
+		// settings
+		this.defaultScrollboard = getConfiguration().getString("default-scrollboard");
+
+		// load default scoreboard
+		for (String scrollboardPath : getConfiguration().getKeysForSection("scrollboards", false)) {
+			scrollboardManager.baseScrollboards.put(scrollboardPath,
+					new ScrollboardData(
+							scrollboardPath,
+							ScrollType.fromString(getConfiguration().getString("scrollboards." + scrollboardPath + ".type")),
+							getConfiguration().getString("scrollboards." + scrollboardPath + ".title"),
+							getConfiguration().getList("scrollboards." + scrollboardPath + ".separator"),
+							getConfiguration().getList("scrollboards." + scrollboardPath + ".content")));
+		}
+	}
+
+	// ------------------------------------------------------------
 	// On enable
 	// ------------------------------------------------------------
 
@@ -74,12 +95,14 @@ public class ScrollBoard extends PyrPlugin
 	{
 		// settings
 		this.scrollboardManager = new ScrollboardManager();
-		this.defaultScrollboard = getConfiguration().getString("default-scrollboard");
 
 		// mysql
 		if (Core.instance().getMySQL() != null && getConfiguration().getBoolean("mysql_enable")) {
 			Core.instance().getMySQL().executeQuery("CREATE TABLE IF NOT EXISTS scrollboard_players(id INT NOT NULL AUTO_INCREMENT, uuid VARCHAR(40) NOT NULL, path TINYTEXT, PRIMARY KEY(id))ENGINE=MYISAM DEFAULT CHARSET='utf8';");
 		}
+
+		// call reload
+		innerReload();
 
 		// commands
 		new Command(this, "scrollboard", "scrollboard", null).addArguments(new Arguments("player [player] [string]", "player [player] [scrollboard]", "assign a scrollboard", "scrollboard.admin", false, new ArgPlayer()));
@@ -91,18 +114,6 @@ public class ScrollBoard extends PyrPlugin
 		Bukkit.getPluginManager().registerEvents(new PlayerInteract(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerJoin(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerChangedWorld(), this);
-
-		// load default scoreboard
-		for (String scrollboardPath : getConfiguration().getKeysForSection("scrollboards", false))
-		{
-			scrollboardManager.baseScrollboards.put(scrollboardPath,
-					new ScrollboardData(
-							scrollboardPath,
-							ScrollType.fromString(getConfiguration().getString("scrollboards." + scrollboardPath + ".type")),
-							getConfiguration().getString("scrollboards." + scrollboardPath + ".title"),
-							getConfiguration().getList("scrollboards." + scrollboardPath + ".separator"),
-							getConfiguration().getList("scrollboards." + scrollboardPath + ".content")));
-		}
 
 		// task
 		checkTaskId = new BukkitRunnable() {
