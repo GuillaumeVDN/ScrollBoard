@@ -81,7 +81,7 @@ public class ScrollboardManager
 					if (playersData.get(pl).path.equals(path))
 						continue;
 				}
-				catch (Exception exception)
+				catch (Throwable exception)
 				{
 					playersData.remove(pl);
 
@@ -135,7 +135,7 @@ public class ScrollboardManager
 						continue;
 					//ScrollBoard.instance().log(Level.INFO, "... no, and no exception were trow");
 				}
-				catch (Exception exception)
+				catch (Throwable exception)
 				{
 					//ScrollBoard.instance().log(Level.INFO, "... an exception were trow");
 					playersData.remove(pl);

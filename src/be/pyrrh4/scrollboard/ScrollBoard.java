@@ -6,7 +6,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import be.pyrrh4.core.Core;
 import be.pyrrh4.core.PyrPlugin;
-import be.pyrrh4.core.command.Arguments;
 import be.pyrrh4.core.command.Command;
 import be.pyrrh4.scrollboard.commands.ArgPlayer;
 import be.pyrrh4.scrollboard.events.PlayerChangedWorld;
@@ -105,7 +104,7 @@ public class ScrollBoard extends PyrPlugin
 		innerReload();
 
 		// commands
-		new Command(this, "scrollboard", "scrollboard", null).addArguments(new Arguments("player [player] [string]", "player [player] [scrollboard]", "assign a scrollboard", "scrollboard.admin", false, new ArgPlayer()));
+		registerCommand(new Command(this, "scrollboard", "scrollboard", new ArgPlayer()));
 
 		// events
 		Bukkit.getPluginManager().registerEvents(new PlayerItemHeld(), this);

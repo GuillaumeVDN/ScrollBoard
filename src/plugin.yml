@@ -4,7 +4,7 @@ author: PYRRH4
 description: Scroll your scoreboard !
 website: https://www.spigotmc.org/resources/24184/
 # Techy
-version: 1.6.2
+version: 1.6.3
 main: be.pyrrh4.scrollboard.ScrollBoard
 depend: [PyrCore]
 softdepend: [PlaceholderAPI]
