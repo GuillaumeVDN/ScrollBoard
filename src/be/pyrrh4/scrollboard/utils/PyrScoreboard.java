@@ -81,6 +81,7 @@ public class PyrScoreboard
 		return new AbstractMap.SimpleEntry<>(team, result);
 	}
 
+	@SuppressWarnings("deprecation")
 	public void build()
 	{
 		if (scoreboard.getObjective(DisplaySlot.SIDEBAR) != null)

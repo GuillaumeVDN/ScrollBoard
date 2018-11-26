@@ -1,9 +1,9 @@
 package be.pyrrh4.scrollboard;
 
-import be.pyrrh4.core.PluginData;
+import be.pyrrh4.core.storage.PluginData;
 
-public class ScrollBoardUser extends PluginData
-{
+public class ScrollBoardUser extends PluginData {
+
 	// ------------------------------------------------------------
 	// Fields and methods
 	// ------------------------------------------------------------
@@ -14,8 +14,9 @@ public class ScrollBoardUser extends PluginData
 		return scrollboard;
 	}
 
-	public ScrollBoardUser setScrollboard(String scrollboard) {
+	public void setScrollboard(String scrollboard) {
 		this.scrollboard = scrollboard;
-		return this;
+		mustSave(true);
 	}
+
 }

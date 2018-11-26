@@ -37,10 +37,10 @@ public class PlayerInteract implements Listener
 		else if (data.scrollboardData.type.equals(ScrollType.CLICK_BLOCK))
 		{
 			String materialName = Main.cfg.getString("scrollboards." + data.scrollboardData.path + ".type").replace("CLICK{", "").replace("}", "");
-			Material material = Material.valueOf(materialName);
+			Mat material = Compat.INSTANCE.getMat(materialName);
 
 			if (material == null)
-				Messages.ERROR_TYPE_MATERIAL").send(player, new Var("$MATERIAL", materialName));
+				Messages.ERROR_TYPE_MATERIAL").send(player, new Var("{material}", materialName));
 
 			else if (event.getClickedBlock().getType().equals(material))
 			{

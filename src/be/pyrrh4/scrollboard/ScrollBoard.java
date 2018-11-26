@@ -5,9 +5,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import be.pyrrh4.core.Core;
+import be.pyrrh4.core.Perm;
 import be.pyrrh4.core.PyrPlugin;
-import be.pyrrh4.core.command.Command;
-import be.pyrrh4.scrollboard.commands.ArgPlayer;
+import be.pyrrh4.core.command.CommandRoot;
+import be.pyrrh4.core.util.Utils;
+import be.pyrrh4.scrollboard.commands.ArgAssign;
 import be.pyrrh4.scrollboard.events.PlayerChangedWorld;
 import be.pyrrh4.scrollboard.events.PlayerInteract;
 import be.pyrrh4.scrollboard.events.PlayerItemHeld;
@@ -17,8 +19,8 @@ import be.pyrrh4.scrollboard.events.PlayerToggleSneak;
 import be.pyrrh4.scrollboard.utils.ScrollType;
 import be.pyrrh4.scrollboard.utils.ScrollboardData;
 
-public class ScrollBoard extends PyrPlugin
-{
+public class ScrollBoard extends PyrPlugin {
+
 	// ------------------------------------------------------------
 	// Instance
 	// ------------------------------------------------------------
@@ -50,26 +52,29 @@ public class ScrollBoard extends PyrPlugin
 	}
 
 	// ------------------------------------------------------------
-	// Override
+	// Pre enable
 	// ------------------------------------------------------------
 
 	@Override
-	protected void init() {
-		//getSettings().autoUpdateUrl("https://www.spigotmc.org/resources/24697/");
+	protected boolean preEnable() {
+		this.spigotResourceId = 24697;
+		return true;
 	}
 
 	@Override
-	protected void initStorage() {}
+	protected void loadStorage() {
+	}
 
 	@Override
-	protected void savePluginData() {}
+	protected void saveStorage() {
+	}
 
 	// ------------------------------------------------------------
 	// Override : reload
 	// ------------------------------------------------------------
 
 	@Override
-	protected void innerReload() {
+	protected void reloadInner() {
 		// settings
 		this.defaultScrollboard = getConfiguration().getString("default-scrollboard");
 
@@ -90,8 +95,7 @@ public class ScrollBoard extends PyrPlugin
 	// ------------------------------------------------------------
 
 	@Override
-	protected void enable()
-	{
+	protected boolean enable() {
 		// settings
 		this.scrollboardManager = new ScrollboardManager();
 
@@ -101,10 +105,15 @@ public class ScrollBoard extends PyrPlugin
 		}
 
 		// call reload
-		innerReload();
 
-		// commands
-		registerCommand(new Command(this, "scrollboard", "scrollboard", new ArgPlayer()));
+		// task
+		checkTaskId = new BukkitRunnable() {
+			@Override
+			public void run() {
+				scrollboardManager.updateAll();
+			}
+		}.runTaskTimerAsynchronously(ScrollBoard.instance(), 20L * 6L, (long) (20 * getConfiguration().getInt("update-delay"))).getTaskId();
+		reloadInner();
 
 		// events
 		Bukkit.getPluginManager().registerEvents(new PlayerItemHeld(), this);
@@ -114,13 +123,13 @@ public class ScrollBoard extends PyrPlugin
 		Bukkit.getPluginManager().registerEvents(new PlayerJoin(), this);
 		Bukkit.getPluginManager().registerEvents(new PlayerChangedWorld(), this);
 
-		// task
-		checkTaskId = new BukkitRunnable() {
-			@Override
-			public void run() {
-				scrollboardManager.updateAll();
-			}
-		}.runTaskTimerAsynchronously(ScrollBoard.instance(), 20L * 6L, (long) (20 * getConfiguration().getInt("update-delay"))).getTaskId();
+		// commands
+		CommandRoot root = new CommandRoot(this, Utils.asList("scrollboard"), null, Perm.SCROLLBOARD_ADMIN, false);
+		registerCommand(root, Perm.SCROLLBOARD_ADMIN);
+		root.addChild(new ArgAssign());
+
+		// return
+		return true;
 	}
 
 	// ------------------------------------------------------------
